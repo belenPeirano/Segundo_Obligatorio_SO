@@ -7,7 +7,10 @@ package so.segundoobligatorio;
 public class Proceso {
 
     public static final int PRIORIDAD_MAXIMA = 0;
-    public static final int PRIORIDAD_MINIMA = 50;
+    public static final int PRIORIDAD_MINIMA = 50;  //Prioridad minima de SO? o Tambien de usuario?
+    
+    //public static final int PRIORIDAD_USUARIO_MAXIMAUSER = 51;    //Ejemplo de posible solucion para solucionar starving
+    //public static final int PRIORIDAD_USUARIO_MINIMA = 100;       //entre proceso usuario y SO
 
     private long id;
     private double tiempoEnCPU;
@@ -19,7 +22,7 @@ public class Proceso {
     private short prioridad;
     private short edad;
     private Estado estado;
-    private boolean SO;                 //SO = True, Usuario = False
+    private boolean SO;                 //SO = True, Usuario = False    //No se puede cambiar por un enum para que sea mas visual?
 
     public enum Estado {
         FINALIZADO,
@@ -28,7 +31,7 @@ public class Proceso {
         LISTO
     }
 
-    public Proceso(long id, double tiempoEnCPU, double esperaES, double periodoES, short prioridad, short edad, Estado estado, boolean SO) {
+    public Proceso(long id, double tiempoEnCPU, double esperaES, double periodoES, short prioridad, Estado estado, boolean SO) {
         this.id = id;
         this.tiempoEnCPU = tiempoEnCPU;
         this.tiempoRestanteEnCPU = tiempoEnCPU;
@@ -37,7 +40,7 @@ public class Proceso {
         this.periodoES = periodoES;
         this.periodoRestanteES = periodoES;
         this.prioridad = prioridad;
-        this.edad = edad;
+        this.edad = 0;       
         this.estado = estado;
         this.SO = SO;
     }
@@ -123,7 +126,7 @@ public class Proceso {
                 + " " + PRIORIDAD_MINIMA + " y mayor o igual que " + PRIORIDAD_MAXIMA);
     }
 
-    public void setEdad(short edad) {
+    public void setEdad(short edad) {       
         this.edad = edad;
     }
 
