@@ -1,16 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package so.segundoobligatorio;
 
-public class Proceso {
+public class Proceso implements Comparable {
 
-    public static final int PRIORIDAD_MAXIMA = 0;
-    public static final int PRIORIDAD_MINIMA = 50;  //Prioridad minima de SO? o Tambien de usuario?
-    
-    //public static final int PRIORIDAD_USUARIO_MAXIMAUSER = 51;    //Ejemplo de posible solucion para solucionar starving
-    //public static final int PRIORIDAD_USUARIO_MINIMA = 100;       //entre proceso usuario y SO
+    public static final int PRIORIDAD_SO_MAXIMA = 0;
+    public static final int PRIORIDAD_SO_MINIMA = 50;
+
+    public static final int PRIORIDAD_USUARIO_MAXIMA = 51;
+    public static final int PRIORIDAD_USUARIO_MINIMA = 100;
 
     private long id;
     private double tiempoEnCPU;
@@ -22,7 +18,8 @@ public class Proceso {
     private short prioridad;
     private short edad;
     private Estado estado;
-    private boolean SO;                 //SO = True, Usuario = False    //No se puede cambiar por un enum para que sea mas visual?
+    private Planificador planificador;
+    private boolean SO;                 //SO = True, Usuario = False
 
     public enum Estado {
         FINALIZADO,
@@ -31,7 +28,7 @@ public class Proceso {
         LISTO
     }
 
-    public Proceso(long id, double tiempoEnCPU, double esperaES, double periodoES, short prioridad, Estado estado, boolean SO) {
+    public Proceso(long id, double tiempoEnCPU, double esperaES, double periodoES, short prioridad, boolean SO, final Planificador planificador) {
         this.id = id;
         this.tiempoEnCPU = tiempoEnCPU;
         this.tiempoRestanteEnCPU = tiempoEnCPU;
@@ -40,9 +37,10 @@ public class Proceso {
         this.periodoES = periodoES;
         this.periodoRestanteES = periodoES;
         this.prioridad = prioridad;
-        this.edad = 0;       
-        this.estado = estado;
+        this.edad = 0;
+        this.estado = Estado.LISTO;
         this.SO = SO;
+        this.planificador = planificador;
     }
 
     public long getId() {
@@ -118,15 +116,14 @@ public class Proceso {
     }
 
     public void setPrioridad(short prioridad) {
-        if (prioridad >= PRIORIDAD_MAXIMA && prioridad <= PRIORIDAD_MINIMA) {
+        if ((SO && prioridad >= PRIORIDAD_SO_MAXIMA && prioridad <= PRIORIDAD_SO_MINIMA) || (!SO && prioridad >= PRIORIDAD_USUARIO_MAXIMA && prioridad <= PRIORIDAD_USUARIO_MINIMA)) {
             this.prioridad = prioridad;
             return;
         }
-        throw new IllegalArgumentException("La prioridad debe ser menor o igual que"
-                + " " + PRIORIDAD_MINIMA + " y mayor o igual que " + PRIORIDAD_MAXIMA);
+        throw new IllegalArgumentException("El valor de la prioridad no es correcto.");
     }
 
-    public void setEdad(short edad) {       
+    public void setEdad(short edad) {
         this.edad = edad;
     }
 
@@ -141,10 +138,65 @@ public class Proceso {
     public void incrementarEdad() {
         edad++;
     }
-    
+
     public void envejecer() {
-        if (prioridad > 0) {
-            
+        if (prioridad > PRIORIDAD_SO_MAXIMA) {
+            if (!SO && this.prioridad > Proceso.PRIORIDAD_SO_MINIMA) {
+                this.prioridad--;
+                this.edad = 0;
+                this.planificador.setPrioridadProceso(this, this.prioridad);
+            } else if (SO) {
+                this.prioridad--;
+                this.edad = 0;
+                this.planificador.setPrioridadProceso(this, this.prioridad);
+            }
         }
     }
+
+    public void ejecutar() {
+        this.estado = Estado.EN_EJECUCION;
+    }
+
+    public void bloquear() {
+        this.estado = Estado.BLOQUEADO;
+        this.periodoRestanteES = this.periodoES;
+        this.planificador.bloquearProceso(this.getId());
+    }
+
+    public void desbloquear() {
+        this.estado = Estado.LISTO;
+        this.esperaRestanteES = this.esperaES;
+        this.planificador.desbloquearProceso(this.id);
+    }
+
+    public void finalizar() {
+        this.estado = Estado.FINALIZADO;
+        this.planificador.finalizarProceso(this);
+    }
+
+    public String imprimir() {
+        return "\nPID: " + this.getId() + "- Info Proceso" + "-" + " Edad: " + this.getEdad() + "-" + " Estado: " + this.getEstado().toString() + "-" + " Prioridad: " + this.getPrioridad() + "-" + " Tiempo restante CPU: " + this.getTiempoRestanteEnCPU() + "-" + " Espera restante ES: " + this.getEsperaRestanteES() + "-" + " Periodo restante hasta ES: " + this.getPeriodoRestanteES();
+    }
+
+    @Override
+    public int compareTo(final Object o) {
+        final Proceso otroProceso = (Proceso) o;
+        if (otroProceso.getEsperaRestanteES() == this.esperaRestanteES) {
+            return 0;
+        }
+        if (otroProceso.getEsperaRestanteES() > this.esperaRestanteES) {
+            return 1;
+        }
+        return -1;
+    }
+
+   /* public enum Estado {
+        LISTO("LISTO", 0),
+        EN_EJECUCION("EN_EJECUCION", 1),
+        BLOQUEADO("BLOQUEADO", 2),
+        FINALIZADO("FINALIZADO", 3);
+
+        private Estado(final String name, final int ordinal) {
+        }
+    }*/
 }
