@@ -132,8 +132,8 @@ public class Planificador {
         return false;
     }
 
-    public boolean insertarProceso(final double tiempoEnCPU, final double periodoES, final double esperaES, final short prioridad, final boolean so) {
-        final Proceso nuevoProc = new Proceso(++this.ultimoId, tiempoEnCPU, periodoES, esperaES, prioridad, so, this);
+    public boolean insertarProceso(final double tiempoEnCPU, final double periodoES, final double esperaES, final short prioridad, Proceso.Tipo tipo) {
+        final Proceso nuevoProc = new Proceso(++this.ultimoId, tiempoEnCPU, periodoES, esperaES, prioridad, tipo, this);
         final boolean resultado = this.colaListos.agregar(nuevoProc.getId(), nuevoProc, prioridad) != null;
         if (resultado) {
             this.actualizar();

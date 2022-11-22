@@ -1,11 +1,8 @@
 package so.segundoobligatorio;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TimerPlanificador {
 
@@ -47,6 +44,7 @@ public class TimerPlanificador {
             }
         });
     }
+    
 
     void iniciar() {
         if (!this.hilo.isAlive()) {

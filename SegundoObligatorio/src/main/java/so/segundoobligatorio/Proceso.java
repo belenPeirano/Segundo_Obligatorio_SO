@@ -19,7 +19,8 @@ public class Proceso implements Comparable {
     private short edad;
     private Estado estado;
     private Planificador planificador;
-    private boolean SO;                 //SO = True, Usuario = False
+    public static String SO;
+    private Tipo tipo;
 
     public enum Estado {
         FINALIZADO,
@@ -28,7 +29,12 @@ public class Proceso implements Comparable {
         LISTO
     }
 
-    public Proceso(long id, double tiempoEnCPU, double esperaES, double periodoES, short prioridad, boolean SO, final Planificador planificador) {
+    public enum Tipo {
+        SO,
+        USUARIO
+    }
+
+    public Proceso(long id, double tiempoEnCPU, double esperaES, double periodoES, short prioridad, Tipo tipo, final Planificador planificador) {
         this.id = id;
         this.tiempoEnCPU = tiempoEnCPU;
         this.tiempoRestanteEnCPU = tiempoEnCPU;
@@ -39,7 +45,7 @@ public class Proceso implements Comparable {
         this.prioridad = prioridad;
         this.edad = 0;
         this.estado = Estado.LISTO;
-        this.SO = SO;
+        this.tipo = tipo;
         this.planificador = planificador;
     }
 
@@ -83,8 +89,8 @@ public class Proceso implements Comparable {
         return estado;
     }
 
-    public boolean isSO() {
-        return SO;
+    public Tipo getTipo() {
+        return this.tipo;
     }
 
     public void setId(long id) {
@@ -116,11 +122,10 @@ public class Proceso implements Comparable {
     }
 
     public void setPrioridad(short prioridad) {
-        if ((SO && prioridad >= PRIORIDAD_SO_MAXIMA && prioridad <= PRIORIDAD_SO_MINIMA) || (!SO && prioridad >= PRIORIDAD_USUARIO_MAXIMA && prioridad <= PRIORIDAD_USUARIO_MINIMA)) {
+        if ((tipo.equals(Tipo.SO) && prioridad >= PRIORIDAD_SO_MAXIMA && prioridad <= PRIORIDAD_SO_MINIMA) || (tipo.equals(Tipo.USUARIO) && prioridad >= PRIORIDAD_USUARIO_MAXIMA && prioridad <= PRIORIDAD_USUARIO_MINIMA)) {
             this.prioridad = prioridad;
             return;
         }
-        throw new IllegalArgumentException("El valor de la prioridad no es correcto.");
     }
 
     public void setEdad(short edad) {
@@ -131,9 +136,9 @@ public class Proceso implements Comparable {
         this.estado = estado;
     }
 
-    public void setSO(boolean SO) {
+    /*public void setSO(String SO) {
         this.SO = SO;
-    }
+    }*/
 
     public void incrementarEdad() {
         edad++;
@@ -141,11 +146,11 @@ public class Proceso implements Comparable {
 
     public void envejecer() {
         if (prioridad > PRIORIDAD_SO_MAXIMA) {
-            if (!SO && this.prioridad > Proceso.PRIORIDAD_SO_MINIMA) {
+            if (SO.equalsIgnoreCase("USUARIO") && this.prioridad > Proceso.PRIORIDAD_SO_MINIMA) {
                 this.prioridad--;
                 this.edad = 0;
                 this.planificador.setPrioridadProceso(this, this.prioridad);
-            } else if (SO) {
+            } else if (SO.equalsIgnoreCase("SO")) {
                 this.prioridad--;
                 this.edad = 0;
                 this.planificador.setPrioridadProceso(this, this.prioridad);
@@ -190,13 +195,4 @@ public class Proceso implements Comparable {
         return -1;
     }
 
-   /* public enum Estado {
-        LISTO("LISTO", 0),
-        EN_EJECUCION("EN_EJECUCION", 1),
-        BLOQUEADO("BLOQUEADO", 2),
-        FINALIZADO("FINALIZADO", 3);
-
-        private Estado(final String name, final int ordinal) {
-        }
-    }*/
 }

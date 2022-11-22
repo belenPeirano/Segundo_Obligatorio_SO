@@ -49,7 +49,8 @@ public class ColaMultiNivel<K, V> {
         if (nivelValido(nivel)) {
             ultimoNivel = Math.min(ultimoNivel, nivel);
             ++tamanio;
-            return colaMultiNivel[nivel].put(clave, value);
+            colaMultiNivel[nivel].put(clave, value);
+            return value;
         }
         return null;
     }
